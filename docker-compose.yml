@@ -1,0 +1,19 @@
+version: "3.8"
+
+services:
+  db:
+    image: postgres:16
+    container_name: openfpa_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: your_password
+      POSTGRES_DB: openfpa_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./sql_scripts/OpenFPA_Database_Schema_postgres.sql:/docker-entrypoint-initdb.d/init.sql:ro
+volumes:
+  pgdata:
+
