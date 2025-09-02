@@ -28,7 +28,7 @@ COPY --chown=appuser:appuser . .
 
 # Add a HEALTHCHECK instruction to ensure the application is truly running.
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-    CMD curl --fail http://localhost:8000/health || exit 1
+    CMD curl --fail http://localhost:8000/api/v1/health || exit 1
 
 EXPOSE 8000
 
