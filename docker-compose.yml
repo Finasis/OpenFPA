@@ -1,19 +1,57 @@
 version: "3.8"
 
 services:
-  db:
-    image: postgres:16
-    container_name: openfpa_postgres
-    restart: always
+  postgres:
+    image: postgres:17-alpine3.22
+    container_name: fpa_postgres
     environment:
-      POSTGRES_USER: root
-      POSTGRES_PASSWORD: your_password
-      POSTGRES_DB: openfpa_db
+      POSTGRES_USER: ${DB_USER:-fpa_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-fpa_password}
+      POSTGRES_DB: ${DB_NAME:-fpa_db}
     ports:
-      - "5432:5432"
+      - 5432:5432
     volumes:
-      - pgdata:/var/lib/postgresql/data
-      - ./sql_scripts/OpenFPA_Database_Schema_postgres.sql:/docker-entrypoint-initdb.d/init.sql:ro
-volumes:
-  pgdata:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, pg_isready, -U, "${DB_USER:-fpa_user}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
+  redis:
+    image: redis:8.2.1-alpine
+    container_name: fpa_redis
+    ports:
+      - 6379:6379
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: [CMD, redis-cli, ping]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: fpa_backend
+    environment:
+      DATABASE_URL: postgresql://${DB_USER:-fpa_user}:${DB_PASSWORD:-fpa_password}@postgres:5432/${DB_NAME:-fpa_db}
+      REDIS_URL: redis://redis:6379/0
+      SECRET_KEY: ${SECRET_KEY:-your-secret-key-change-this-in-production}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+    ports:
+      - 8000:8000
+    volumes:
+      - ./backend:/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+volumes:
+  postgres_data:
+  redis_data:
