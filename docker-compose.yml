@@ -1,57 +1,68 @@
-version: "3.8"
+version: '3.8'
 
 services:
   postgres:
-    image: postgres:17-alpine3.22
-    container_name: fpa_postgres
+    image: postgres:16-alpine
+    container_name: openfpa_postgres
     environment:
-      POSTGRES_USER: ${DB_USER:-fpa_user}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-fpa_password}
-      POSTGRES_DB: ${DB_NAME:-fpa_db}
+      POSTGRES_USER: ${POSTGRES_USER:-openfpa_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-openfpa_pass}
+      POSTGRES_DB: ${POSTGRES_DB:-openfpa}
     ports:
-      - 5432:5432
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./docker/init:/docker-entrypoint-initdb.d
     healthcheck:
-      test: [CMD-SHELL, "pg_isready -U ${DB_USER:-fpa_user} -d ${DB_NAME:-fpa_db}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-openfpa_user} -d ${POSTGRES_DB:-openfpa}"]
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - openfpa_network
 
-  redis:
-    image: redis:8.2.1-alpine
-    container_name: fpa_redis
-    ports:
-      - 6379:6379
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: [CMD, redis-cli, ping]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  backend:
+  app:
     build:
-      context: ./backend
+      context: .
       dockerfile: Dockerfile
-    container_name: fpa_backend
+    container_name: openfpa_app
     environment:
-      DATABASE_URL: postgresql://${DB_USER:-fpa_user}:${DB_PASSWORD:-fpa_password}@postgres:5432/${DB_NAME:-fpa_db}
-      REDIS_URL: redis://redis:6379/0
-      SECRET_KEY: ${SECRET_KEY:-your-secret-key-change-this-in-production}
-      ENVIRONMENT: ${ENVIRONMENT:-development}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-openfpa_user}:${POSTGRES_PASSWORD:-openfpa_pass}@postgres:5432/${POSTGRES_DB:-openfpa}
     ports:
-      - 8000:8000
+      - "${APP_PORT:-8000}:8000"
     volumes:
-      - ./backend:/app
+      - ./app:/app/app
     depends_on:
       postgres:
         condition: service_healthy
-      redis:
-        condition: service_healthy
+    networks:
+      - openfpa_network
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: openfpa_frontend
+    environment:
+      NEXT_PUBLIC_API_URL: /api/v1
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - app
+    networks:
+      - openfpa_network
+    command: npm run dev
 
 volumes:
   postgres_data:
-  redis_data:
+    name: openfpa_postgres_data
+
+networks:
+  openfpa_network:
+    name: openfpa_network
+    driver: bridge

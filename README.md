@@ -1,275 +1,324 @@
-# 📊 OpenFP&A — Open-Source Financial Planning & Analysis Platform
+# OpenFP&A API - FastAPI + SQLAlchemy Implementation
 
-**OpenFP&A** is an open-source platform designed to automate **Financial Planning & Analysis (FP&A)** workflows for **SMEs, consultants, and finance professionals**.
+A modern Financial Planning & Analysis (FP&A) system built with FastAPI and SQLAlchemy 2.0.
 
-No expensive software. No SaaS lock-ins. Just transparent, modular tools you control — built for real-world business needs.
+## Features
 
----
+- **Multi-company support** with hierarchical organizational structure
+- **Chart of Accounts** with account types and hierarchies
+- **Flexible fiscal periods** management
+- **Budget & Forecast** scenarios with versioning
+- **GL Transaction** tracking with double-entry bookkeeping
+- **KPI Management** and tracking
+- **User Management** with company-level access control
+- **RESTful API** with automatic documentation
 
-## ✨ Key Features
+## Tech Stack
 
-### Phase 1 MVP (Current)
+- **FastAPI** - Modern web framework for building APIs
+- **SQLAlchemy 2.0** - ORM with async support
+- **PostgreSQL** - Primary database
+- **Pydantic** - Data validation using Python type annotations
+- **Uvicorn** - ASGI server
 
-- **Multiple Data Source Connections** (PostgreSQL, MySQL, SQL Server, Oracle, SQLite)
-- **Flexible Reporting & Data Model** with REST API
-- **Advanced Analytics Engine** powered by Pandas
-  - Pivot tables and cross-tabulation
-  - Slice & dice operations
-  - Statistical analysis and aggregations
-- **Excel Export/Import** for end-users who prefer spreadsheets
-- **Docker-based deployment** for easy setup
-- **Modern Tech Stack**: FastAPI backend with comprehensive API documentation
-
-### Phase 2 & Beyond (Roadmap)
-
-- Budgeting & Forecasting modules
-- Workflow support for closing/budgeting cycles
-- Manual journal entries and adjustments
-- Advanced Excel integration (MDX connectors)
-- ClickHouse/OLAP engine integration for performance
-- Real-time dashboards and visualizations
-
----
-
-## 🏗️ Architecture
-
-- **Backend**: FastAPI (Python 3.11+)
-- **Database**: PostgreSQL (primary), Redis (caching)
-- **Data Processing**: Pandas, NumPy
-- **Containerization**: Docker & Docker Compose
-- **API Documentation**: Auto-generated Swagger/OpenAPI
-
----
-
-## 📂 Project Structure
+## Project Structure
 
 ```
-fpa-platform/
-├── docker-compose.yml          # Docker orchestration
-├── .env.example               # Environment variables template
-├── README.md                  # This file
-├── backend/                   # FastAPI backend application
-│   ├── Dockerfile            # Backend container definition
-│   ├── requirements.txt      # Python dependencies
-│   ├── app/
-│   │   ├── main.py          # FastAPI application entry point
-│   │   ├── core/            # Core functionality
-│   │   │   ├── config.py    # Application configuration
-│   │   │   ├── database.py  # Database connection management
-│   │   │   └── security.py  # Authentication & authorization
-│   │   ├── api/
-│   │   │   └── v1/
-│   │   │       └── endpoints/   # API endpoints
-│   │   │           ├── health.py        # Health checks
-│   │   ├── models/          # SQLAlchemy ORM models - TODO
-│   │   ├── schemas/         # Pydantic validation schemas - TODO
-│   │   ├── services/        # Business logic layer - TODO
-│   │   └── utils/           # Utility functions
-│   └── tests/               # Test suite
-└── migrations/              # Database migrations (Alembic)
+/home/marioled/dev/cloud/
+├── app/
+│   ├── models/
+│   │   ├── base.py          # Database connection and base model
+│   │   └── models.py        # SQLAlchemy models
+│   ├── schemas/
+│   │   └── schemas.py       # Pydantic schemas for validation
+│   ├── crud/
+│   │   ├── crud_base.py     # Generic CRUD operations
+│   │   └── crud_operations.py # Entity-specific CRUD operations
+│   ├── api/
+│   │   └── routes.py        # API endpoints
+│   └── main.py              # FastAPI application
+├── database_schema.sql      # PostgreSQL schema
+├── requirements.txt         # Python dependencies
+├── .env.example            # Environment variables example
+└── README.md               # This file
 ```
 
----
+## Installation
 
-## 🚀 Quick Start
+### Option 1: Using Docker (Recommended)
 
-### Prerequisites
-
-- Docker & Docker Compose
-- Git
-- Python 3.11+ (for local development)
-
-### Installation
-
-1. **Clone the repository**:
-
+1. **Clone the repository**
    ```bash
-   git clone https://github.com/Finasis/OpenFPA.git
-   cd OpenFPA
+   cd /home/marioled/dev/cloud
    ```
 
-2. **Create environment file**:
-
+2. **Start services with Docker Compose**
    ```bash
-   cp .env.example .env
-   # Edit .env with your configuration
-   ```
-
-3. **Start the platform**:
-
-   ```bash
+   # Start PostgreSQL, pgAdmin, and the application
    docker-compose up -d
+   
+   # View logs
+   docker-compose logs -f
+   
+   # Stop services
+   docker-compose down
+   
+   # Stop and remove volumes (careful - this deletes data!)
+   docker-compose down -v
    ```
 
-4. **Check service health**:
+3. **Access the services**
+   - **API**: http://localhost:8000
+   - **API Docs**: http://localhost:8000/docs
+   - **Frontend**: http://localhost:3000
 
+### Option 2: Manual Installation
+
+1. **Clone the repository**
    ```bash
-   # API Health check
-   curl http://localhost:8000/api/v1/health/
-
-   # Readiness check (database & redis)
-   curl http://localhost:8000/api/v1/health/ready
+   cd /home/marioled/dev/cloud
    ```
 
-5. **Access the platform**:
-   - API Documentation: http://localhost:8000/docs
-   - API Base URL: http://localhost:8000/api/v1
-
----
-
-## 📋 API Endpoints
-
-### ALL ENDPOINTS ARE TODO
-
-### Data Sources
-
-- `GET /api/v1/data-sources` - List all data sources
-- `POST /api/v1/data-sources` - Create new data source
-- `GET /api/v1/data-sources/{id}` - Get specific data source
-- `PUT /api/v1/data-sources/{id}` - Update data source
-- `DELETE /api/v1/data-sources/{id}` - Delete data source
-- `POST /api/v1/data-sources/{id}/test` - Test connection
-- `POST /api/v1/data-sources/{id}/query` - Execute query
-- `GET /api/v1/data-sources/{id}/tables` - List tables
-
-### Analytics
-
-- `POST /api/v1/analytics/pivot` - Create pivot table
-- `POST /api/v1/analytics/analyze` - Perform data analysis
-- `POST /api/v1/analytics/slice-dice` - Slice and dice operations
-- `POST /api/v1/analytics/export/excel` - Export to Excel
-- `POST /api/v1/analytics/upload/csv` - Analyze CSV upload
-- `GET /api/v1/analytics/functions` - List available functions
-
-### Reports
-
-- `GET /api/v1/reports` - List all reports
-- `POST /api/v1/reports` - Create new report
-- `GET /api/v1/reports/{id}` - Get specific report
-- `POST /api/v1/reports/{id}/execute` - Execute report
-- `POST /api/v1/reports/{id}/schedule` - Schedule report
-
-### Health & Monitoring
-
-- `GET /api/v1/health` - Basic health check
-- `GET /api/v1/health/ready` - Readiness probe
-- `GET /api/v1/health/live` - Liveness probe
-
----
-
-## 🔧 Development
-
-### Local Development Setup
-
-1. **Create Python virtual environment**:
-
+2. **Create a virtual environment**
    ```bash
    python -m venv venv
    source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
 
-2. **Install dependencies**:
-
+3. **Install dependencies**
    ```bash
-   cd backend
    pip install -r requirements.txt
-   pip install -r requirements-dev.txt  # For development tools
    ```
 
-3. **Run locally** (requires PostgreSQL and Redis running):
+4. **Set up PostgreSQL database**
    ```bash
-   uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+   # Using Docker for just PostgreSQL
+   docker run --name openfpa-postgres \
+     -e POSTGRES_USER=openfpa_user \
+     -e POSTGRES_PASSWORD=openfpa_pass \
+     -e POSTGRES_DB=openfpa \
+     -p 5432:5432 \
+     -d postgres:16-alpine
+   
+   # Or create database manually if PostgreSQL is installed
+   createdb openfpa
+   psql -d openfpa -f database_schema.sql
    ```
 
-### Running Tests
+5. **Configure environment variables**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your database credentials
+   ```
 
-```bash
-cd backend
-pytest tests/ -v --cov=app
+6. **Run the application**
+   ```bash
+   python -m app.main
+   ```
+
+   The API will be available at `http://localhost:8000`
+
+## Docker Configuration
+
+The Docker setup includes:
+
+- **PostgreSQL 16**: Database server with persistent volume
+- **FastAPI Application**: Auto-reloading development server
+
+### Environment Variables
+
+Configure in `.env` file:
+
+```env
+# PostgreSQL
+POSTGRES_USER=openfpa_user
+POSTGRES_PASSWORD=openfpa_pass
+POSTGRES_DB=openfpa
+POSTGRES_PORT=5432
+
+# Application
+APP_PORT=8000
+DATABASE_URL=postgresql://openfpa_user:openfpa_pass@localhost:5432/openfpa
 ```
 
-### Database Migrations
+### Docker Commands
 
 ```bash
-# Create a new migration
-alembic revision --autogenerate -m "Description of changes"
+# Build and start all services
+docker-compose up --build
 
-# Apply migrations
-alembic upgrade head
-
-# Rollback one version
-alembic downgrade -1
-```
-
----
-
-## 🐳 Docker Commands
-
-```bash
-# Start all services
+# Start in background
 docker-compose up -d
 
 # View logs
-docker-compose logs -f backend
+docker-compose logs -f [service_name]
 
-# Stop services
+# Execute commands in container
+docker-compose exec postgres psql -U openfpa_user -d openfpa
+docker-compose exec app python -c "from app.models.base import engine; from app.models.models import Base; Base.metadata.create_all(engine)"
+
+# Restart a service
+docker-compose restart app
+
+# Stop all services
 docker-compose down
 
-# Stop and remove volumes (data)
+# Remove all data (careful!)
 docker-compose down -v
-
-# Rebuild containers
-docker-compose build --no-cache
-
-# Access backend container
-docker exec -it fpa_backend bash
-
-# Access database
-docker exec -it fpa_postgres psql -U fpa_user -d fpa_db
 ```
 
----
+## API Documentation
 
-## 🔒 Security Considerations
+Once running, you can access:
+- **Swagger UI**: http://localhost:8000/docs
+- **ReDoc**: http://localhost:8000/redoc
 
-- Change default passwords in production
-- Use environment variables for sensitive data
-- Enable HTTPS in production
-- Implement proper authentication (JWT tokens ready)
-- Encrypt database passwords
-- Regular security updates
+## API Endpoints
 
----
+### Companies
+- `POST /api/v1/companies` - Create company
+- `GET /api/v1/companies` - List companies
+- `GET /api/v1/companies/{id}` - Get company
+- `PUT /api/v1/companies/{id}` - Update company
+- `DELETE /api/v1/companies/{id}` - Delete company
 
-## 🤝 Contributing
+### Cost Centers
+- `POST /api/v1/cost-centers` - Create cost center
+- `GET /api/v1/companies/{id}/cost-centers` - List cost centers
+- `GET /api/v1/cost-centers/{id}` - Get cost center
+- `PUT /api/v1/cost-centers/{id}` - Update cost center
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+### GL Accounts
+- `POST /api/v1/gl-accounts` - Create GL account
+- `GET /api/v1/companies/{id}/gl-accounts` - List GL accounts
+- `GET /api/v1/gl-accounts/{id}` - Get GL account
+- `PUT /api/v1/gl-accounts/{id}` - Update GL account
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+### Fiscal Periods
+- `POST /api/v1/fiscal-periods` - Create fiscal period
+- `GET /api/v1/companies/{id}/fiscal-periods` - List fiscal periods
+- `POST /api/v1/fiscal-periods/{id}/close` - Close period
 
----
+### Scenarios (Budgets/Forecasts)
+- `POST /api/v1/scenarios` - Create scenario
+- `GET /api/v1/companies/{id}/scenarios` - List scenarios
+- `POST /api/v1/scenarios/{id}/approve` - Approve scenario
 
-## 📝 License
+### Budget Lines
+- `POST /api/v1/budget-lines` - Create budget line
+- `GET /api/v1/scenarios/{id}/budget-lines` - List budget lines
+- `PUT /api/v1/budget-lines/{id}` - Update budget line
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+### GL Transactions
+- `POST /api/v1/gl-transactions` - Create transaction with lines
+- `GET /api/v1/gl-transactions/{id}` - Get transaction
+- `POST /api/v1/gl-transactions/{id}/post` - Post transaction
 
----
+### KPIs
+- `POST /api/v1/kpis` - Create KPI
+- `GET /api/v1/companies/{id}/kpis` - List KPIs
 
-## 🙏 Acknowledgments
+### Users
+- `POST /api/v1/users` - Create user
+- `GET /api/v1/users/{id}` - Get user
+- `PUT /api/v1/users/{id}` - Update user
 
-- Built for the FP&A community
-- Inspired by the need for accessible financial tools
-- Powered by open-source technologies
+## Example Usage
 
----
+### Create a Company
+```python
+import requests
 
-## 📧 Contact
+response = requests.post(
+    "http://localhost:8000/api/v1/companies",
+    json={
+        "code": "ACME",
+        "name": "Acme Corporation",
+        "currency_code": "USD",
+        "fiscal_year_start_month": 1
+    }
+)
+company = response.json()
+print(f"Created company: {company['id']}")
+```
 
-- Project Link: [https://github.com/Finasis/OpenFPA](https://github.com/Finasis/OpenFPA)
-- Issues: [https://github.com/Finasis/OpenFPA/issues](https://github.com/Finasis/OpenFPA/issues)
+### Create a GL Transaction
+```python
+response = requests.post(
+    "http://localhost:8000/api/v1/gl-transactions",
+    json={
+        "company_id": company_id,
+        "fiscal_period_id": period_id,
+        "transaction_date": "2024-01-15",
+        "description": "Sales revenue",
+        "lines": [
+            {
+                "gl_account_id": cash_account_id,
+                "cost_center_id": sales_cc_id,
+                "debit_amount": 1000,
+                "credit_amount": 0,
+                "description": "Cash received"
+            },
+            {
+                "gl_account_id": revenue_account_id,
+                "cost_center_id": sales_cc_id,
+                "debit_amount": 0,
+                "credit_amount": 1000,
+                "description": "Sales revenue"
+            }
+        ]
+    }
+)
+```
 
----
+## Database Migrations
+
+For production, use Alembic for database migrations:
+
+```bash
+# Initialize Alembic
+alembic init alembic
+
+# Create a migration
+alembic revision --autogenerate -m "Initial migration"
+
+# Apply migrations
+alembic upgrade head
+```
+
+## Testing
+
+Create a test file `test_api.py`:
+
+```python
+from fastapi.testclient import TestClient
+from app.main import app
+
+client = TestClient(app)
+
+def test_create_company():
+    response = client.post(
+        "/api/v1/companies",
+        json={"code": "TEST", "name": "Test Corp", "currency_code": "USD"}
+    )
+    assert response.status_code == 200
+    assert response.json()["code"] == "TEST"
+```
+
+Run tests:
+```bash
+pytest test_api.py
+```
+
+## Production Deployment
+
+1. Use environment variables for sensitive configuration
+2. Set up proper database connection pooling
+3. Use a production ASGI server (Gunicorn with Uvicorn workers)
+4. Implement authentication and authorization
+5. Set up logging and monitoring
+6. Configure CORS properly for your frontend domain
+
+## License
+
+MIT
